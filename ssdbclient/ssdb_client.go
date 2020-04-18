@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/seefan/goerr"
 	"github.com/seefan/gossdb/conf"
 )
 
@@ -143,7 +142,7 @@ func (s *SSDBClient) IsOpen() bool {
 //执行ssdb命令
 func (s *SSDBClient) do(args ...interface{}) (resp []string, err error) {
 	if !s.isOpen {
-		return nil, goerr.String("gossdb client is closed.")
+		return nil, errors.New("gossdb client is closed")
 	}
 	defer func() {
 		if e := recover(); e != nil {
@@ -153,11 +152,11 @@ func (s *SSDBClient) do(args ...interface{}) (resp []string, err error) {
 	}()
 	if err = s.send(args); err != nil {
 		s.isOpen = false
-		return nil, goerr.Errorf(err, "client send error")
+		return nil, fmt.Errorf("client send error: %v", err)
 	}
 	if resp, err = s.recv(); err != nil {
 		s.isOpen = false
-		return nil, goerr.Errorf(err, "client recv error")
+		return nil, fmt.Errorf("client recv error: %v", err)
 	}
 	return
 }
@@ -169,16 +168,16 @@ func (s *SSDBClient) auth() error {
 	resp, err := s.do("auth", s.password)
 	if err != nil {
 		if e := s.Close(); e != nil {
-			err = goerr.Errorf(err, "client close failed")
+			err = fmt.Errorf("client close failed: %v", err)
 		}
-		return goerr.Errorf(err, "authentication failed")
+		return fmt.Errorf("authentication failed: %v", err)
 	}
 	if len(resp) > 0 && resp[0] == oK {
 		//验证成功
 		//s.isAuth = true
 		return nil
 	}
-	return goerr.String("authentication failed,password is wrong")
+	return errors.New("authentication failed,password is wrong")
 
 	//}
 	//return nil
@@ -198,14 +197,14 @@ func (s *SSDBClient) Do(args ...interface{}) ([]string, error) {
 	resp, err := s.do(args...)
 	if err != nil {
 		if e := s.Close(); e != nil {
-			err = goerr.Errorf(err, "client close failed")
+			err = fmt.Errorf("client close failed: %v", err)
 		}
 		if s.retryEnabled { //如果允许重试，就重新打开一次连接
 			if err = s.Start(); err == nil {
 				resp, err = s.do(args...)
 				if err != nil {
 					if e := s.Close(); e != nil {
-						err = goerr.Errorf(err, "client close failed")
+						err = fmt.Errorf("client close failed: %v", err)
 					}
 				}
 			}
