@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/seefan/goerr"
+	"github.com/shouqiangtang/gossdb/goerr"
 )
 
 //ZSet 设置 zset 中指定 key 对应的权重值.

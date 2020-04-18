@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/seefan/gossdb/conf"
+	"github.com/shouqiangtang/gossdb/goerr"
 )
 
 const (
@@ -142,7 +143,7 @@ func (s *SSDBClient) IsOpen() bool {
 //执行ssdb命令
 func (s *SSDBClient) do(args ...interface{}) (resp []string, err error) {
 	if !s.isOpen {
-		return nil, errors.New("gossdb client is closed")
+		return nil, goerr.String("gossdb client is closed.")
 	}
 	defer func() {
 		if e := recover(); e != nil {
@@ -152,11 +153,11 @@ func (s *SSDBClient) do(args ...interface{}) (resp []string, err error) {
 	}()
 	if err = s.send(args); err != nil {
 		s.isOpen = false
-		return nil, fmt.Errorf("client send error: %v", err)
+		return nil, goerr.Errorf(err, "client send error")
 	}
 	if resp, err = s.recv(); err != nil {
 		s.isOpen = false
-		return nil, fmt.Errorf("client recv error: %v", err)
+		return nil, goerr.Errorf(err, "client recv error")
 	}
 	return
 }
@@ -168,16 +169,16 @@ func (s *SSDBClient) auth() error {
 	resp, err := s.do("auth", s.password)
 	if err != nil {
 		if e := s.Close(); e != nil {
-			err = fmt.Errorf("client close failed: %v", err)
+			err = goerr.Errorf(err, "client close failed")
 		}
-		return fmt.Errorf("authentication failed: %v", err)
+		return goerr.Errorf(err, "authentication failed")
 	}
 	if len(resp) > 0 && resp[0] == oK {
 		//验证成功
 		//s.isAuth = true
 		return nil
 	}
-	return errors.New("authentication failed,password is wrong")
+	return goerr.String("authentication failed,password is wrong")
 
 	//}
 	//return nil
@@ -197,14 +198,14 @@ func (s *SSDBClient) Do(args ...interface{}) ([]string, error) {
 	resp, err := s.do(args...)
 	if err != nil {
 		if e := s.Close(); e != nil {
-			err = fmt.Errorf("client close failed: %v", err)
+			err = goerr.Errorf(err, "client close failed")
 		}
 		if s.retryEnabled { //如果允许重试，就重新打开一次连接
 			if err = s.Start(); err == nil {
 				resp, err = s.do(args...)
 				if err != nil {
 					if e := s.Close(); e != nil {
-						err = fmt.Errorf("client close failed: %v", err)
+						err = goerr.Errorf(err, "client close failed")
 					}
 				}
 			}

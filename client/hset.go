@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/seefan/goerr"
+	"github.com/shouqiangtang/gossdb/goerr"
 )
 
 //HSet 设置 hashmap 中指定 key 对应的值内容.

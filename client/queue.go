@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/seefan/goerr"
+	"github.com/shouqiangtang/gossdb/goerr"
 )
 
 var (

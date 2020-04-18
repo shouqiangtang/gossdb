@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/seefan/goerr"
+	"github.com/shouqiangtang/gossdb/goerr"
 )
 
 //Set 设置指定 key 的值内容
